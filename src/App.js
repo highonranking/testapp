@@ -1,25 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const supportedPaymentMethods = [
+  {
+    supportedMethods: ["https://cred-web-stg.dreamplug.in/checkout/pay"],
+  },
+];
+
+const paymentDetails = {
+  total: {
+    label: "dummy data",
+    amount: {
+      currency: "INR",
+      value: "10.00",
+    },
+  },
+};
+
+const paymentRequest = new PaymentRequest(supportedPaymentMethods, paymentDetails);
+
+const canMakePaymentPromise = paymentRequest.canMakePayment();
+
+const App = () => {
+  const [hasCredApp, setHasCredApp] = useState(false);
+
+  useEffect(() => {
+    canMakePaymentPromise
+      .then((result) => {
+        if (result) {
+          //Browser detected CRED app.
+          setHasCredApp(true);
+        } else {
+          // The user does not have a CRED app / not supported browser.
+          // Redirect to traditional checkout flow.
+          setHasCredApp(false);
+        }
+      })
+      .catch((err) => {
+        // fallback to traditional checkout flow.
+        setHasCredApp(false);
+      });
+  }, []);
+
+  return <div>{hasCredApp ? "true" : "false"}</div>;
+};
 
 export default App;
